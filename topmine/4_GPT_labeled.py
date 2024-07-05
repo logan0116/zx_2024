@@ -23,7 +23,7 @@ def text_generation(each_prompt: list):
     :return:
     """
     model_engine = "gpt-4-1106-preview"
-    openai.api_key = "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"
+    openai.api_key = ""
 
     start_time = time.time()
     completions = openai.ChatCompletion.create(
