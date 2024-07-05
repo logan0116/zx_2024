@@ -135,6 +135,9 @@ def load_node_list():
 
 
 def deal_2():
+    """
+
+    """
     print('---------------------deal_2---------------------')
     input_file_path = 'data/output/'
     output_file_path = 'data/clean_1/'
@@ -316,7 +319,7 @@ def deal_4():
         f.write('\n'.join(sentence_list_cut))
 
 
-def deal_5():
+def deal_5(time_span):
     """
     合并所有文本并分词
     :return:
@@ -325,8 +328,20 @@ def deal_5():
     input_file_list = os.listdir(input_file_path)
     input_file_list = sorted(input_file_list, key=lambda x: int(x[:4]))
 
+    if time_span == '125':
+        input_file_range = ['2011', '2012', '2013', '2014', '2015']
+    elif time_span == '135':
+        input_file_range = ['2016', '2017', '2018', '2019', '2020']
+    elif time_span == '145':
+        input_file_range = ['2021', '2022', '2023', '2024', '2025']
+    else:
+        raise ValueError('time_span error')
+
     text_list = []
     for input_file in input_file_list:
+        if input_file not in input_file_range:
+            continue
+
         load_file_path = os.path.join(input_file_path, input_file)
         load_file_list = os.listdir(load_file_path)
         for file in tqdm(load_file_list):
@@ -354,41 +369,21 @@ def deal_5():
     length_counter = []
 
     # save by json
-    text_cut_path = 'data/text_1213.json'
+    text_cut_path = f'data/text_{time_span}.json'
     with open(text_cut_path, 'w', encoding='utf-8') as f:
         for file, s in text_list_clean:
             length_counter.append(len(s))
             f.write(json.dumps({'file': file, 'text': s}, ensure_ascii=False) + '\n')
     # save by txt for topmine
-    counter = {'0-100': 0,
-               '100-200': 0,
-               '200-300': 0,
-               '300-400': 0,
-               '400-500': 0,
-               '>500': 0}
-    for l in length_counter:
-        if l < 100:
-            counter['0-100'] += 1
-        elif l < 200:
-            counter['100-200'] += 1
-        elif l < 300:
-            counter['200-300'] += 1
-        elif l < 400:
-            counter['300-400'] += 1
-        elif l < 500:
-            counter['400-500'] += 1
-        else:
-            counter['>500'] += 1
-
-    print(counter)
-
-    # text_cut_path = 'data/text_1213.txt'
-    # with open(text_cut_path, 'w', encoding='utf-8') as f:
-    #     for file, s in text_list_clean:
-    #         f.write(s + '\n')
+    text_cut_path = f'data/text_{time_span}.txt'
+    with open(text_cut_path, 'w', encoding='utf-8') as f:
+        for file, s in text_list_clean:
+            f.write(s + '\n')
 
 
 if __name__ == "__main__":
-    deal_2()
-    deal_3()
-    deal_4()
+    # deal_2()
+    # deal_3()
+    deal_5(time_span='125')
+    deal_5(time_span='135')
+    deal_5(time_span='145')
