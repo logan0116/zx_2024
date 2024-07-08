@@ -18,7 +18,13 @@ input路径：'data/topmine/keywords_multiple.xlsx'
 
 做法：将重点产品服务指导目录的“目录”整理成表
 
-input路径：'data/topmine/keywords_multiple.xlsx' 'data/word_base.xlsx'
+input路径 'data/word_base.xlsx'
+
+output路径：'data/word_base.json'
+
+运行代码：[1_base_word.py](topmine%2F1_base_word.py)
+
+input路径：'data/topmine/keywords_multiple.xlsx' 'data/word_base.json'
 
 output路径：'data/战新词表_topmine_top50.xlsx'
 
