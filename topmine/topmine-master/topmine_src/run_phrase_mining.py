@@ -4,7 +4,7 @@ import utils
 
 print('Running Phrase Mining...')
 
-file_name = '../../data/text_1213.txt'
+file_name = '../../data/text_125.txt'
 
 # represents the minimum number of occurences you want each phrase to have.
 min_support = 10
