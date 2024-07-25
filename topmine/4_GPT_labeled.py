@@ -31,11 +31,10 @@ def chat(inputs, if_local=False):
         client = ZhipuAI(api_key="")  # 填写您自己的APIKey
         response = client.chat.completions.create(
             model="glm-4-air",  # 填写需要调用的模型名称
-            messages=[{"role": "user", "content": inputs}],
+            messages=inputs,
         )
         outputs = response.choices[0].message.content
     return outputs
-
 
 
 def load_word2category():
@@ -156,7 +155,7 @@ def labeled():
             each_prompt.append({"role": "user", "content": "术语：{}".format(word)})
             each_prompt.append({"role": "assistant", "content": ''})
 
-            message = text_generation(each_prompt)
+            message = chat(each_prompt)
             already_get_set[category + " " + word] = message
             # except:
             #     print('error', category, word)
