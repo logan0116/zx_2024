@@ -14,27 +14,28 @@ import json
 import pandas as pd
 import os
 from tqdm import tqdm
+import requests
+from zhipuai import ZhipuAI
 
 
-def text_generation(each_prompt: list):
-    """
-    给定一个prompt，返回一个message
-    :param prompt:
-    :return:
-    """
-    model_engine = "gpt-4-1106-preview"
-    openai.api_key = ""
+def chat(inputs, if_local=False):
+    if if_local:
+        # 调用本地chat server
+        res = requests.post(f'http://localhost:9011/api/smart_qa/chat',
+                            json={"inputs": inputs, "history": []},
+                            timeout=60)
+        res_data = res.json()
+        outputs = res_data['data'] if res_data['code'] == 200 else "chat server error"
+    else:
+        # 调用GLM-4 api接口
+        client = ZhipuAI(api_key="")  # 填写您自己的APIKey
+        response = client.chat.completions.create(
+            model="glm-4-air",  # 填写需要调用的模型名称
+            messages=[{"role": "user", "content": inputs}],
+        )
+        outputs = response.choices[0].message.content
+    return outputs
 
-    start_time = time.time()
-    completions = openai.ChatCompletion.create(
-        model=model_engine,
-        messages=each_prompt
-    )
-    end_time = time.time()
-    message = completions.choices[0].message.content
-    # print('time: ', end_time - start_time)
-    # print(message)
-    return message
 
 
 def load_word2category():
