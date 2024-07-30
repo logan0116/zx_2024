@@ -41,17 +41,10 @@ def load_word2category(time_span):
     """
     :return:
     """
-    category2word_list = dict()
+    with open(f'../data/categories2word2freq4ner_{time_span}.json', 'r', encoding='utf-8') as f:
+        category2word2freq = json.load(f)
 
-    # load word list by pandas from excel
-    df = pd.read_excel(f'data/战新词表_topmine_top50_{time_span}.xlsx', header=None)
-
-    for i in range(8):
-        word_list = df[i].values.tolist()
-        word_list = [word for word in word_list if str(word) != 'nan']
-        category2word_list[word_list[0]] = word_list[1:]
-
-    return category2word_list
+    return category2word2freq
 
 
 def make_prompt(category):
@@ -137,16 +130,16 @@ def labeled(time_span, i):
     通过gpt3打标签
     :return:
     """
-    category2word_list = load_word2category(time_span)
-    already_get_set = load_already_get(f'data/label_already_get_{time_span}_{i}.json')
+    category2word2freq = load_word2category(time_span)
+    already_get_set = load_already_get(f'../data/label_already_get_{time_span}_{i}.json')
 
     # category2word_list = {'新一代信息技术': ['制品制造业', '技术装备', '产品研发制造', '设计制造', '制造能力'],
     #                       '新材料': ['新能源汽'],
     #                       '生物': ['生存发展']}
 
-    for category, word_list in category2word_list.items():
+    for category, word2freq in category2word2freq.items():
         prompt = make_prompt(category)
-        for word in tqdm(word_list):
+        for word in tqdm(word2freq, desc=category, total=len(word2freq)):
             if category + " " + word in already_get_set:
                 continue
             # try:
@@ -155,7 +148,7 @@ def labeled(time_span, i):
             each_prompt.append({"role": "assistant", "content": ''})
 
             message = chat(each_prompt)
-            already_get_set[category + " " + word] = message
+            already_get_set[category + " | " + word + " | " + str(word2freq[word])] = message
             # except:
             #     print('error', category, word)
             #     # save already get
@@ -163,11 +156,12 @@ def labeled(time_span, i):
             #         json.dump(already_get_set, f)
             #     continue
 
-    with open(f'data/label_already_get_{time_span}_{i}.json', 'w', encoding='utf-8') as f:
+    with open(f'../data/label_already_get_{time_span}_{i}.json', 'w', encoding='utf-8') as f:
         json.dump(already_get_set, f)
     # save by pandas
-    result_list = [{'category': c_w.split(' ')[0], 'word': c_w.split(' ')[1], 'result': res}
-                   for c_w, res in already_get_set.items()]
+    result_list = [c_w_f.split(' | ') + [res] for c_w_f, res in already_get_set.items()]
+    result_list = [{'category': c, 'word': w, 'freq': f, 'result': res}
+                   for c, w, f, res in result_list]
     result_list = pd.DataFrame(result_list)
     result_list.to_excel(f'data/战新词表_topmine_top50_{time_span}_labeled_{i}.xlsx', index=False)
 

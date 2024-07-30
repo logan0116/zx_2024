@@ -14,8 +14,8 @@ import torch
 import numpy as np
 
 
-def data_process():
-    with open('../../data_0617/processed_file/text4ner.txt', 'r', encoding='utf-8') as f:
+def data_process(time_span):
+    with open(f'../data/text_{time_span}.json', 'r', encoding='utf-8') as f:
         text_list = f.readlines()
     # strip
     text_list = [t.strip() for t in text_list]
@@ -24,7 +24,7 @@ def data_process():
     # tokenizer
     tokenizer = BertTokenizer.from_pretrained('hfl/chinese-roberta-wwm-ext-large')
     batch_size = 32
-    max_len = 128
+    max_len = 256
 
     token_ids_list = []
     attention_mask_list = []
@@ -36,9 +36,9 @@ def data_process():
         attention_mask_list.extend(outputs['attention_mask'])
 
     # save token_ids_list and attention_mask_list
-    with open('../../data_0617/processed_file/token_ids_list4ner.json', 'w', encoding='utf-8') as f:
+    with open(f'../data/token_ids_list4ner_{time_span}.json', 'w', encoding='utf-8') as f:
         json.dump(token_ids_list, f)
-    with open('../../data_0617/processed_file/attention_mask_list4ner.json', 'w', encoding='utf-8') as f:
+    with open(f'../data/attention_mask_list4ner_{time_span}.json', 'w', encoding='utf-8') as f:
         json.dump(attention_mask_list, f)
 
 
@@ -48,18 +48,21 @@ def get_word(token_ids, i, j, tokenizer):
     return ''.join(entity.split())
 
 
-def predict():
+def predict(time_span):
     """
     这里在predict里面加一个file_inf参数，方便文件的检索
+    # 125: f1: 0.979 model path GP_20240730-154649_4.pt
+    # 135: f1: 0.988 model path GP_20240730-182752_4.pt
+    # 145: f1: 0.990 model path GP_20240730-203711_4.pt
+
+
     """
     # device
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     # data
-    with open('../../data_0617/processed_file/text_id_list4ner.json', 'r', encoding='utf-8') as f:
-        text_id_list = json.load(f)
-    with open('../../data_0617/processed_file/token_ids_list4ner.json', 'r', encoding='utf-8') as f:
+    with open(f'../data/token_ids_list4ner_{time_span}.json', 'r', encoding='utf-8') as f:
         token_ids_list = json.load(f)
-    with open('../../data_0617/processed_file/attention_mask_list4ner.json', 'r', encoding='utf-8') as f:
+    with open(f'../data/attention_mask_list4ner_{time_span}.json', 'r', encoding='utf-8') as f:
         attention_mask_list = json.load(f)
     with open('../data/categories.json', 'r', encoding='utf-8') as f:
         categories = json.load(f)
@@ -78,16 +81,20 @@ def predict():
                   if_rope=True,
                   if_efficientnet=False
                   )
-    model_state_dict = torch.load('../model/GP_20240625-142820_9.pt')
+
+    time_span2model_path = {
+        '125': '../model/GP_20240730-154649_4.pt',
+        '135': '../model/GP_20240730-182752_4.pt',
+        '145': '../model/GP_20240730-203711_4.pt'
+    }
+    model_state_dict = torch.load(time_span2model_path[time_span])
     model.load_state_dict(model_state_dict, strict=False)
     model.to(device)
     # tokenizer
     tokenizer = BertTokenizer.from_pretrained('hfl/chinese-roberta-wwm-ext-large')
-
-    text_id2categories2word2freq = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
-
+    categories2word2freq = defaultdict(lambda: defaultdict(int))
     # predict
-    batch_size = 48
+    batch_size = 8
 
     for i in tqdm(range(0, len(token_ids_list), batch_size)):
         token_ids_batch = token_ids_list[i:i + batch_size]
@@ -98,7 +105,7 @@ def predict():
         score = torch.where(score > 0, 1, 0)
         score = score.cpu().numpy()
 
-        for text_id, token_ids, s in zip(text_id_list[i:i + batch_size], token_ids_list[i:i + batch_size], score):
+        for token_ids, s in zip(token_ids_list[i:i + batch_size], score):
             for c in range(len(s)):
                 ones_indices = np.where(s[c] == 1)
                 end_index = token_ids.index(102)
@@ -107,13 +114,16 @@ def predict():
                         continue
                     if m <= k:
                         word = get_word(token_ids, m, k, tokenizer)
-                        text_id2categories2word2freq[text_id][categories[c]][word] += 1
-
+                        categories2word2freq[categories[c]][word] += 1
     # save
-    with open('../../data_0617/processed_file/text_id2categories2word2freq4ner.json', 'w', encoding='utf-8') as f:
-        json.dump(text_id2categories2word2freq, f, ensure_ascii=False)
+    with open(f'../data/categories2word2freq4ner_{time_span}.json', 'w', encoding='utf-8') as f:
+        json.dump(categories2word2freq, f, ensure_ascii=False)
 
 
 if __name__ == '__main__':
-    # data_process()
-    predict()
+    # data_process('125')
+    # data_process('135')
+    # data_process('145')
+    predict('125')
+    predict('135')
+    predict('145')

@@ -19,15 +19,17 @@ import time
 
 
 def train(args):
+    time_span = '145'
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     base_model = 'hfl/chinese-roberta-wwm-ext-large'
     print(device)
     # data process
     print('data process')
-    data_process = DataProcess(max_len=128, base_model=base_model)
+    get_categories(f'../data/train_{time_span}.json')
+    data_process = DataProcess(max_len=256, base_model=base_model)
     ner_num_heads = len(data_process.categories)
-    train_text_list, train_label_list = data_process.load_data('../data/train.json')
-    dev_text_list, dev_label_list = data_process.load_data('../data/dev.json')
+    train_text_list, train_label_list = data_process.load_data(f'../data/train_{time_span}.json')
+    dev_text_list, dev_label_list = data_process.load_data(f'../data/dev_{time_span}.json')
     # dataloader
     print('dataloader')
     print('  train data')
@@ -111,5 +113,8 @@ def train(args):
 
 
 if __name__ == '__main__':
+    # 125: f1: 0.979 model path GP_20240730-154649_4.pt
+    # 135: f1: 0.988 model path GP_20240730-182752_4.pt
+    # 145: f1: 0.990 model path GP_20240730-203711_4.pt
     args = parameter_parser()
     train(args)

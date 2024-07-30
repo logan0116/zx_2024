@@ -12,6 +12,7 @@ import pandas as pd
 from tqdm import tqdm
 from collections import defaultdict
 import json
+import random
 
 
 def load_data(filename):
@@ -30,34 +31,27 @@ def load_data(filename):
     return text_list
 
 
-def load_word2category():
+def load_word2category(time_span):
     """
     :return:
     """
-    category_set = set()
-    word2category_list = defaultdict(list)
-
-    # load word list by pandas from excel
-    df = pd.read_excel('data/战新词表_topmine_top50_labeled_n_combine.xlsx')
-    category_list = df['category'].values.tolist()
-    word_list = df['word'].values.tolist()
-    label_list = df['label'].values.tolist()
-
-    for category, word, label in zip(category_list, word_list, label_list):
-        category_set.add(category)
-        if label >= 2:
-            word2category_list[word].append(category)
-
-    # 引入word_base，将word_base中的词加入到word2category_list中
-    with open('data/word_base.json', encoding='utf-8') as f:
+    # load word_base_{}.json  战新词表_topmine_top50_{}_labeled_combine.json
+    with open(f'../data/word_base_{time_span}.json', encoding='utf-8') as f:
         category2word_list_base = json.load(f)
-
+    with open(f'../data/战新词表_topmine_top50_{time_span}_labeled_combine.json', encoding='utf-8') as f:
+        category2word_list_core = json.load(f)
+    word2category_list = defaultdict(list)
+    # add 2 category to word2category_list
     for category, word_list in category2word_list_base.items():
         for word in word_list:
             word2category_list[word].append(category)
+    for category, word_list in category2word_list_core.items():
+        for word in word_list:
+            word2category_list[word].append(category)
 
-    print(len(word2category_list))
-    print(word2category_list)
+    # category_list
+    category_list = category2word_list_base.keys()
+
     return word2category_list, list(category_list)
 
 
@@ -75,17 +69,16 @@ def get_word_bit(word, text):
     return word_bit_list
 
 
-def make_data(file_path):
+def make_data(time_span):
     """
     example:
     {"text": "万通地产设计总监刘克峰；", "label": {"name": {"刘克峰": [[8, 10]]}, "company": {"万通地产": [[0, 3]]}, "position": {"设计总监": [[4, 7]]}}}
     :return:
     """
+    file_path = f'../data/text_{time_span}.json'
 
     data = load_data(file_path)
-    word2category_list, category_list = load_word2category()
-    print(len(word2category_list))
-
+    word2category_list, category_list = load_word2category(time_span)
     write_list = []
 
     print('data_process processing...')
@@ -102,11 +95,28 @@ def make_data(file_path):
                 label[category][word] = word_bit_list
 
         write_list.append({'text': text, 'label': label})
+
+    random.seed(int(time_span))
+    # 70% train, 30% dev
+    random.shuffle(write_list)
+    train_num = int(0.7 * len(write_list))
+    write_list_train = write_list[:train_num]
+    write_list_dev = write_list[train_num:]
+
     # write
-    with open('data/data_ner_1213.json', 'w', encoding='utf-8') as f:
+    with open(f'../data/data_ner_{time_span}.json', 'w', encoding='utf-8') as f:
         for l in write_list:
+            f.write(json.dumps(l, ensure_ascii=False) + '\n')
+
+    with open(f'../data/train_{time_span}.json', 'w', encoding='utf-8') as f:
+        for l in write_list_train:
+            f.write(json.dumps(l, ensure_ascii=False) + '\n')
+
+    with open(f'../data/dev_{time_span}.json', 'w', encoding='utf-8') as f:
+        for l in write_list_dev:
             f.write(json.dumps(l, ensure_ascii=False) + '\n')
 
 
 if __name__ == '__main__':
-    make_data('data/text_1213.json')
+    for time_span in ['125', '135', '145']:
+        make_data(time_span)
