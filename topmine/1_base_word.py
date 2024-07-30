@@ -24,8 +24,8 @@ def word_clean(word):
     return word
 
 
-def get_word_base():
-    df = pd.read_excel('data/word_base.xlsx', dtype=str, header=None)
+def get_word_base(time_span):
+    df = pd.read_excel(f'data/word_base_{time_span}.xlsx', dtype=str, header=None)
 
     category2word_list = {}
 
@@ -33,12 +33,18 @@ def get_word_base():
         word_list = df[i].values.tolist()
         word_list = [word for word in word_list if str(word) != 'nan']
         word_list = [word_clean(word) for word in word_list]
-        category2word_list[word_list[0]] = word_list[1:]
+        category = word_list[0]
+        word_list = word_list[1:]
+        # 去重
+        word_list = list(set(word_list))
+        category2word_list[category] = word_list
 
     # save by json
-    with open('data/word_base.json', 'w', encoding='utf-8') as f:
+    with open(f'data/word_base_{time_span}.json', 'w', encoding='utf-8') as f:
         json.dump(category2word_list, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
-    get_word_base()
+    get_word_base('125')
+    get_word_base('135')
+    get_word_base('145')

@@ -93,10 +93,11 @@ class TopmineAdd():
 
 
 if __name__ == '__main__':
-    seg_path = 'data/topmine/partitioneddocs.txt'
-    index_path = 'data/topmine/vocab.txt'
-    save_path_s = 'data/topmine/keywords_single.xlsx'
-    save_path_m = 'data/topmine/keywords_multiple.xlsx'
+    time_span = '145'
+    seg_path = f'data/topmine/partitioneddocs_{time_span}.txt'
+    index_path = f'data/topmine/vocab_{time_span}.txt'
+    save_path_s = f'data/topmine/keywords_single_{time_span}.xlsx'
+    save_path_m = f'data/topmine/keywords_multiple_{time_span}.xlsx'
 
     # for min_freq in range(0, 500, 25):
     #     print('min_freq:', min_freq)
@@ -104,7 +105,7 @@ if __name__ == '__main__':
     #     # topmine_add.add_base_keywords(keyword_base_path)
     #     topmine_add.get_keywords(save_path_s, save_path_m)
 
-    min_freq = 100
+    min_freq = 50
     print('min_freq:', min_freq)
     topmine_add = TopmineAdd(index_path, seg_path, min_freq)
     # topmine_add.add_base_keywords(keyword_base_path)

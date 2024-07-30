@@ -261,7 +261,7 @@ def deal_5(year):
     合并所有文本并分词
     :return:
     """
-    input_file_path = 'data/clean_2/'
+    input_file_path = '../topmine/data/clean_2/'
 
     text_list = []
     load_file_path = os.path.join(input_file_path, str(year))
@@ -301,5 +301,5 @@ def deal_5(year):
 if __name__ == "__main__":
     # deal_2()
     # deal_3()
-    for year in range(2011, 2023):
+    for year in range(2023, 2024):
         deal_5(year)

@@ -163,11 +163,11 @@ if __name__ == '__main__':
     bert_model.cuda()
     print('模型载入成功')
 
-    for year in range(2011, 2012):
+    for year in range(2023, 2024):
         file_path = 'data/text_1218_{}.json'.format(year)
         output_path = 'data/doc2vec_{}'.format(year)
         if not os.path.exists(output_path):
             os.mkdir(output_path)
         # doc_trans_1(tokenizer, file_path, output_path)
-        for length, batch_size in [(64, 96), (128, 48), (256, 24), (512, 8)]:
+        for length, batch_size in [(256, 24), (512, 8)]:
             doc_trans_2(output_path, length, batch_size)

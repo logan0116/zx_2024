@@ -4,12 +4,12 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-def load_title():
+def load_title(time_span):
     """
     加载title
     :return:
     """
-    title_path = 'title.txt'
+    title_path = f'title_{time_span}.txt'
     with open(title_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
     title_list = [l.strip() for l in lines]
@@ -26,11 +26,13 @@ def load_title():
     title_list = [l for l in title_list if not any([kw in l for kw in key_words_n])]
     logging.info('title num(clean): {}'.format(len(title_list)))
     # save
-    title_path = 'title_screen.txt'
+    title_path = f'title_screen_{time_span}.txt'
     with open(title_path, 'w', encoding='utf-8') as f:
         f.write('\n'.join(title_list))
     logging.info('save title_screen.txt')
 
 
 if __name__ == '__main__':
-    load_title()
+    load_title('125')
+    load_title('135')
+    load_title('145')

@@ -4,23 +4,23 @@ import json
 import pandas as pd
 
 
-def load_source_list():
+def load_source_list(time_span):
     # keywords_multiple.xlsx
-    df = pd.read_excel('data/topmine/keywords_multiple.xlsx')
+    df = pd.read_excel(f'data/topmine/keywords_multiple_{time_span}.xlsx')
     word_list = df['word'].values.tolist()
     word_list = [word.replace(' ', '') for word in word_list]
     return word_list
 
 
-def load_target_list():
-    with open('data/word_base.json', 'r', encoding='utf-8') as f:
+def load_target_list(time_span):
+    with open(f'data/word_base_{time_span}.json', 'r', encoding='utf-8') as f:
         word_base = json.load(f)
     return word_base
 
 
 def get_embedding(sentences, tokenizer, model):
     # Tokenize sentences
-    encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt', max_length=512)
+    encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt', max_length=24)
     input_ids = encoded_input['input_ids'].cuda()
     attention_mask = encoded_input['attention_mask'].cuda()
     token_type_ids = encoded_input['token_type_ids'].cuda()
@@ -37,12 +37,12 @@ def get_embedding(sentences, tokenizer, model):
     return sentence_embeddings
 
 
-def get_top50(tokenizer, model):
+def get_top50(tokenizer, model, time_span):
     """
     :return:
     """
-    source_list = load_source_list()
-    c2target_list = load_target_list()
+    source_list = load_source_list(time_span)
+    c2target_list = load_target_list(time_span)
     # embed
     source_embed = get_embedding(source_list, tokenizer, model)
     c2target_embed = {}
@@ -71,7 +71,7 @@ def get_top50(tokenizer, model):
 
     # save by pandas
     df = pd.DataFrame(c2top50)
-    df.to_excel('data/战新词表_topmine_top50.xlsx', index=False)
+    df.to_excel(f'data/战新词表_topmine_top50_{time_span}.xlsx', index=False)
 
 
 if __name__ == '__main__':
@@ -80,4 +80,5 @@ if __name__ == '__main__':
     model = AutoModel.from_pretrained('BAAI/bge-large-zh-v1.5')
     model.eval()
     model.cuda()
-    get_top50(tokenizer, model)
+    time_span = '145'
+    get_top50(tokenizer, model, time_span)

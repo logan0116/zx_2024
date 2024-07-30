@@ -73,5 +73,5 @@ def get_node2vec(year, version):
 if __name__ == '__main__':
     # get_node_year2year()
     # get_index2node_year()
-    for year in range(2011, 2023):
+    for year in range(2023, 2024):
         get_node2vec(year, version=0)

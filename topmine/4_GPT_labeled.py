@@ -28,7 +28,7 @@ def chat(inputs, if_local=False):
         outputs = res_data['data'] if res_data['code'] == 200 else "chat server error"
     else:
         # 调用GLM-4 api接口
-        client = ZhipuAI(api_key="")  # 填写您自己的APIKey
+        client = ZhipuAI(api_key="ad3ac616426fc9d576caf276c0688e5e.h3qwd1Vqt8rGvmy8")  # 填写您自己的APIKey
         response = client.chat.completions.create(
             model="glm-4-air",  # 填写需要调用的模型名称
             messages=inputs,
@@ -37,14 +37,14 @@ def chat(inputs, if_local=False):
     return outputs
 
 
-def load_word2category():
+def load_word2category(time_span):
     """
     :return:
     """
     category2word_list = dict()
 
     # load word list by pandas from excel
-    df = pd.read_excel('data/战新词表_topmine_top50.xlsx', header=None)
+    df = pd.read_excel(f'data/战新词表_topmine_top50_{time_span}.xlsx', header=None)
 
     for i in range(8):
         word_list = df[i].values.tolist()
@@ -107,10 +107,9 @@ def make_prompt(category):
     }
 
     prompt = [{"role": "system",
-               "content": "您是一个{}产业的专家。我将给您展示一些术语，请判断我给出的术语是否与{}产业相关，特别是该术语是否与{}产业的产品相关。" +
-                          "如果可以请回复“是”，不可以则回复“否”。" +
-                          "请注意，类似于“新兴技术、创新成果、快速发展”这样词语可能会出现在多个领域，所以判定其不具备描述特定产业的能力"
-                          .format(category, category)}]
+               "content": f"您是一个{category}产业的专家。我将给您展示一些术语，请判断我给出的术语是否与{category}产业相关，特别是该术语是否与{category}产业的产品相关。" +
+                          "如果可以请回复“是”，不可以则回复“否”。只回答是否即可，不需要回答解析" +
+                          "请注意，类似于“新兴技术、创新成果、快速发展”这样词语可能会出现在多个领域，所以判定其不具备描述特定产业的能力"}]
 
     example = category2example[category]
     for word_pos, word_neg in zip(example['positive'], example['negative']):
@@ -133,13 +132,13 @@ def load_already_get(already_get_path):
     return already_get_set
 
 
-def labeled():
+def labeled(time_span, i):
     """
     通过gpt3打标签
     :return:
     """
-    category2word_list = load_word2category()
-    already_get_set = load_already_get('data/label_already_get.json')
+    category2word_list = load_word2category(time_span)
+    already_get_set = load_already_get(f'data/label_already_get_{time_span}_{i}.json')
 
     # category2word_list = {'新一代信息技术': ['制品制造业', '技术装备', '产品研发制造', '设计制造', '制造能力'],
     #                       '新材料': ['新能源汽'],
@@ -164,14 +163,17 @@ def labeled():
             #         json.dump(already_get_set, f)
             #     continue
 
-    with open('data/label_already_get.json', 'w', encoding='utf-8') as f:
+    with open(f'data/label_already_get_{time_span}_{i}.json', 'w', encoding='utf-8') as f:
         json.dump(already_get_set, f)
     # save by pandas
     result_list = [{'category': c_w.split(' ')[0], 'word': c_w.split(' ')[1], 'result': res}
                    for c_w, res in already_get_set.items()]
     result_list = pd.DataFrame(result_list)
-    result_list.to_excel('data/战新词表_topmine_top50_labeled_n3.xlsx', index=False)
+    result_list.to_excel(f'data/战新词表_topmine_top50_{time_span}_labeled_{i}.xlsx', index=False)
 
 
 if __name__ == '__main__':
-    labeled()
+    for time_span in ['135', '145']:
+        for i in range(3):
+            print(time_span, i)
+            labeled(time_span, i)

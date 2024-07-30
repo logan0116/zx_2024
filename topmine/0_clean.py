@@ -1,7 +1,7 @@
 # pdf trans to text
 import re
 
-# import pdfplumber
+import pdfplumber
 import os
 from tqdm import tqdm
 # multi process
@@ -43,8 +43,8 @@ def pdf2text(pdf_file_path, save_path, file):
 
 
 def deal_1():
-    input_file_path = '../data/input/'
-    output_file_path = '../data/output/'
+    input_file_path = 'data/input/'
+    output_file_path = 'data/output/'
     input_file_list = os.listdir(input_file_path)
     input_file_list = sorted(input_file_list, key=lambda x: int(x[:4]))
 
@@ -128,13 +128,13 @@ def text_cut_single(txt_file_path, save_path, file):
     return title_list
 
 
-def load_node_list():
-    df = pd.read_excel('data/隐形单项冠军_上市企业.xlsx', dtype=str)
+def load_node_list(time_span):
+    df = pd.read_excel(f'data/node_list/node_list_{time_span}.xlsx', dtype=str)
     node_id_list = df['node_id'].values.tolist()
     return node_id_list
 
 
-def deal_2():
+def deal_2(time_span):
     """
 
     """
@@ -143,16 +143,27 @@ def deal_2():
     output_file_path = 'data/clean_1/'
 
     # load node_id_list_chosen
-    node_id_list_chosen = load_node_list()
+    node_id_list_chosen = load_node_list(time_span)
 
     input_file_list = os.listdir(input_file_path)
     input_file_list = sorted(input_file_list, key=lambda x: int(x[:4]))
 
     title_list = []
 
+    timespan2year_list = {
+        '125': ['2011', '2012', '2013', '2014', '2015'],
+        '135': ['2016', '2017', '2018', '2019', '2020'],
+        '145': ['2021', '2022', '2023', '2024', '2025']
+    }
+
+    year_list = timespan2year_list[time_span]
+
     for input_file in input_file_list:
+        if input_file not in year_list:
+            continue
         load_file_path = os.path.join(input_file_path, input_file)
         load_file_list = os.listdir(load_file_path)
+
         # clean
         load_file_list = [file for file in load_file_list if file.split('_')[0] in node_id_list_chosen]
         # save path
@@ -171,7 +182,7 @@ def deal_2():
         for title_list_ in title_list_list:
             title_list += title_list_
     # save title
-    with open('title.txt', 'w', encoding='utf-8') as f:
+    with open(f'title_{time_span}.txt', 'w', encoding='utf-8') as f:
         f.write('\n'.join(title_list))
 
 
@@ -208,10 +219,23 @@ def deal_3():
     input_file_list = os.listdir(input_file_path)
     input_file_list = sorted(input_file_list, key=lambda x: int(x[:4]))
     # title_screen
-    with open('title_screen.txt', 'r', encoding='utf-8') as f:
-        title_screen_list = f.readlines()
-    title_screen_list = set([l.strip() for l in title_screen_list])
+
+    timespan2year_list = {
+        '125': ['2011', '2012', '2013', '2014', '2015'],
+        '135': ['2016', '2017', '2018', '2019', '2020'],
+        '145': ['2021', '2022', '2023', '2024', '2025']
+    }
+    year2time_span = {}
+    for time_span, year_list in timespan2year_list.items():
+        for year in year_list:
+            year2time_span[year] = time_span
+
+
     for input_file in input_file_list:
+        time_span = year2time_span[input_file]
+        with open(f'title_screen_{time_span}.txt', 'r', encoding='utf-8') as f:
+            title_screen_list = f.readlines()
+        title_screen_list = set([l.strip() for l in title_screen_list])
         load_file_path = os.path.join(input_file_path, input_file)
         load_file_list = os.listdir(load_file_path)
         # save path
@@ -382,8 +406,11 @@ def deal_5(time_span):
 
 
 if __name__ == "__main__":
-    # deal_2()
-    # deal_3()
+    # deal_1()
+    deal_2('125')
+    deal_2('135')
+    deal_2('145')
+    deal_3()
     deal_5(time_span='125')
     deal_5(time_span='135')
     deal_5(time_span='145')
