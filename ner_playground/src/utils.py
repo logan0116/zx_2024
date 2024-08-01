@@ -39,11 +39,12 @@ def get_categories(filename):
             for k in l['label']:
                 if k not in category2index:
                     category2index[k] = len(category2index)
-    # sorted
-    category2index = dict(sorted(category2index.items(), key=lambda x: x[1]))
+    # sorted by category
+    # 确保所有的几个任务的
+    category2index = dict(sorted(category2index.items(), key=lambda x: x[0]))
     # # save
     with open('../data/categories.json', 'w', encoding='utf-8') as f:
-        json.dump(category2index, f)
+        json.dump(category2index, f, ensure_ascii=False, indent=4)
 
 
 class DataProcess:

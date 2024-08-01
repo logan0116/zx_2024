@@ -140,15 +140,20 @@ def labeled(time_span, i):
     for category, word2freq in category2word2freq.items():
         prompt = make_prompt(category)
         for word in tqdm(word2freq, desc=category, total=len(word2freq)):
-            if category + " " + word in already_get_set:
+            if category + " | " + word + " | " + str(word2freq[word]) in already_get_set:
+                if len(word) > 10:
+                    already_get_set[category + " | " + word + " | " + str(word2freq[word])] = '否'
                 continue
             # try:
-            each_prompt = prompt.copy()
-            each_prompt.append({"role": "user", "content": "术语：{}".format(word)})
-            each_prompt.append({"role": "assistant", "content": ''})
+            if len(word) > 10:
+                already_get_set[category + " | " + word + " | " + str(word2freq[word])] = '否'
+            else:
+                each_prompt = prompt.copy()
+                each_prompt.append({"role": "user", "content": "术语：{}".format(word)})
+                each_prompt.append({"role": "assistant", "content": ''})
 
-            message = chat(each_prompt)
-            already_get_set[category + " | " + word + " | " + str(word2freq[word])] = message
+                message = chat(each_prompt)
+                already_get_set[category + " | " + word + " | " + str(word2freq[word])] = message
             # except:
             #     print('error', category, word)
             #     # save already get
@@ -163,11 +168,9 @@ def labeled(time_span, i):
     result_list = [{'category': c, 'word': w, 'freq': f, 'result': res}
                    for c, w, f, res in result_list]
     result_list = pd.DataFrame(result_list)
-    result_list.to_excel(f'data/战新词表_topmine_top50_{time_span}_labeled_{i}.xlsx', index=False)
+    result_list.to_excel(f'../data/战新词表_ner_{time_span}_labeled_{i}.xlsx', index=False)
 
 
 if __name__ == '__main__':
     for time_span in ['125', '135', '145']:
-        for i in range(3):
-            print(time_span, i)
-            labeled(time_span, i)
+        labeled(time_span, 0)

@@ -54,8 +54,6 @@ def predict(time_span):
     # 125: f1: 0.979 model path GP_20240730-154649_4.pt
     # 135: f1: 0.988 model path GP_20240730-182752_4.pt
     # 145: f1: 0.990 model path GP_20240730-203711_4.pt
-
-
     """
     # device
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -94,7 +92,7 @@ def predict(time_span):
     tokenizer = BertTokenizer.from_pretrained('hfl/chinese-roberta-wwm-ext-large')
     categories2word2freq = defaultdict(lambda: defaultdict(int))
     # predict
-    batch_size = 8
+    batch_size = 16
 
     for i in tqdm(range(0, len(token_ids_list), batch_size)):
         token_ids_batch = token_ids_list[i:i + batch_size]
