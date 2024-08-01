@@ -270,7 +270,7 @@ def deal_4():
         f.write('\n'.join(sentence_list_cut))
 
 
-def deal_5():
+def deal_5(time_span):
     """
     合并所有文本并分词
     :return:
@@ -279,8 +279,20 @@ def deal_5():
     input_file_list = os.listdir(input_file_path)
     input_file_list = sorted(input_file_list, key=lambda x: int(x[:4]))
 
+    if time_span == '125':
+        input_file_range = ['2011', '2012', '2013', '2014', '2015']
+    elif time_span == '135':
+        input_file_range = ['2016', '2017', '2018', '2019', '2020']
+    elif time_span == '145':
+        input_file_range = ['2021', '2022', '2023', '2024', '2025']
+    else:
+        raise ValueError('time_span error')
+
     text_list = []
     for input_file in input_file_list:
+        if input_file not in input_file_range:
+            continue
+
         load_file_path = os.path.join(input_file_path, input_file)
         load_file_list = os.listdir(load_file_path)
         for file in tqdm(load_file_list):
@@ -308,7 +320,7 @@ def deal_5():
     length_counter = []
 
     # save by json
-    text_cut_path = 'data/text_1227.json'
+    text_cut_path = f'data/text_{time_span}.json'
     with open(text_cut_path, 'w', encoding='utf-8') as f:
         for file, s in text_list_clean:
             length_counter.append(len(s))
@@ -344,5 +356,6 @@ def deal_5():
 
 if __name__ == "__main__":
     # deal_2()
-    deal_3()
-    deal_5()
+    # deal_3()
+    for time_span in ['125', '135', '145']:
+        deal_5(time_span)

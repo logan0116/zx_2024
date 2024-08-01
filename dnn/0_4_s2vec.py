@@ -80,9 +80,6 @@ def doc_trans_1(model_path, file_path, output_path):
     token_ids_512 = []
 
     for index, text in tqdm(data):
-        year = index.split('_')[1]
-        if year not in ['2019', '2020', '2021', '2022']:
-            continue
         token_ids = tokenizer.encode(text, max_length=512, truncation=True)
         if len(token_ids) <= 64:
             id_64.append(index)
@@ -127,7 +124,7 @@ def doc_trans_1(model_path, file_path, output_path):
 
 def doc_trans_2(model_path, output_path, length, batch_size, version=0):
     print('length', length, 'batch_size', batch_size, 'version', version)
-    device = torch.device('cuda:0')
+    device = torch.device('cuda:1')
     # model_load
     tokenizer, bert_model = model_load(model_path)
     # load checkpoint
@@ -187,9 +184,10 @@ def doc_trans_2(model_path, output_path, length, batch_size, version=0):
 
 
 if __name__ == '__main__':
+    time_span = '145'
     model_path = 'hfl/chinese-roberta-wwm-ext-large'
-    file_path = 'data/text_1227.json'
-    output_path = 'data/doc2vec'
+    file_path = f'data/text_{time_span}.json'
+    output_path = f'data/doc2vec_{time_span}'
     # doc_trans_1(model_path, file_path, output_path)
-    for length, batch_size in [(512, 8)]:
-        doc_trans_2(model_path, output_path, length, batch_size, version=1)
+    for length, batch_size in [(512, 12)]:
+        doc_trans_2(model_path, output_path, length, batch_size)

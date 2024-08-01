@@ -47,9 +47,9 @@ def load_node_list():
     return node2label
 
 
-def get_inputs(version):
+def get_inputs(time_span):
     # load by json
-    with open('data/node2vec_v{}.json'.format(version), 'r', encoding='utf-8') as f:
+    with open(f'data/node2vec_{time_span}.json', 'r', encoding='utf-8') as f:
         node2vec = json.load(f)
     node2label = load_node_list()
 
@@ -63,17 +63,13 @@ def get_inputs(version):
         x_list.append(vec)
         y_list.append(node2label[node])
 
-    print(len(x_list))
-    print(len(y_list))
-    print(y_list)
-
     # save by numpy
     x_list = np.array(x_list)
     y_list = np.array(y_list)
-    np.save('data/x_v{}'.format(version), x_list)
-    np.save('data/y', y_list)
+    np.save(f'data/x_{time_span}', x_list)
+    np.save(f'data/y_{time_span}', y_list)
 
 
 if __name__ == '__main__':
-    get_inputs(version=0)
-    get_inputs(version=1)
+    for time_span in ['125', '135', '145']:
+        get_inputs(time_span)

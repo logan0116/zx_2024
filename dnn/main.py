@@ -27,7 +27,7 @@ import time
 import json
 
 
-def train(args, version, category):
+def train(args, time_span, version, category):
     if version == 0:
         device = 'cuda:0'
     else:
@@ -35,13 +35,13 @@ def train(args, version, category):
     print(device)
     # data_process process
     print('data_process process')
-    x_list = np.load('data/x_v{}.npy'.format(version))
-    y_list = np.load('data/y.npy'.format(version))
+    x_list = np.load(f'data/x_{time_span}.npy')
+    y_list = np.load(f'data/y_{time_span}.npy')
     x_list = torch.Tensor(x_list)
     y_list = torch.LongTensor(y_list)
     y_list = label_deal(y_list, category)
 
-    sm = SMOTE(random_state=1224, sampling_strategy={1: int(torch.sum(y_list == 1)) * 5})
+    sm = SMOTE(random_state=int(time_span), sampling_strategy=0.25)
     x_list, y_list = sm.fit_resample(x_list, y_list)
 
     x_list = torch.Tensor(x_list)
@@ -52,7 +52,7 @@ def train(args, version, category):
     data = MyDataSet(x_list, y_list)
     train_data, dev_data = random_split(data, [int(len(data) * 0.8), len(data) - int(len(data) * 0.8)])
     # category2vec
-    c = np.load('data/category2vec_v{}.npy'.format(version))
+    c = np.load(f'data/category2vec_{time_span}.npy')
     c = torch.Tensor(c[category])
     c = c.to(device)
 
@@ -134,7 +134,6 @@ def train(args, version, category):
                 x = x.to(device)
                 with torch.no_grad():
                     score = model(x, c)
-
                 score = torch.sigmoid(score)
                 y_pred = torch.where(score > 0.5, 1, 0)
                 y_pred = y_pred.cpu()
@@ -151,20 +150,20 @@ def train(args, version, category):
             best_f1 = np.mean(f1_collect)
             best_precision = np.mean(precision_collect)
             bast_recall = np.mean(recall_collect)
-            model_path = 'model/Dnn_{}_{}_v{}.pt'.format(epoch, category, version)
-            torch.save(model.state_dict(), model_path)
 
         best_f1_list.append(best_f1)
         if epoch > 10:
             if set(best_f1_list[-10:]) == {best_f1}:  # 10次f1不变
-                # early stop
+                # early stop and save model
+                model_path = 'model/Dnn_{}_{}_v{}.pt'.format(time_span, category, epoch)
+                torch.save(model.state_dict(), model_path)
                 break
 
     print('----------------------------------')
     print('training finished')
     print('best f1: ', best_f1, 'best precision: ', best_precision, 'best recall: ', bast_recall)
     # print 2 train log
-    with open('train_log_v{}_0.txt'.format(version), 'a') as f:
+    with open(f'train_log_{time_span}.txt', 'a') as f:
         f.write('category: {}\n'.format(category))
         f.write('best f1: {}\n'.format(best_f1))
         f.write('best precision: {}\n'.format(best_precision))
@@ -177,5 +176,4 @@ def train(args, version, category):
 if __name__ == '__main__':
     for category in range(8):
         args = parameter_parser()
-        train(args, version=0, category=category)
-        train(args, version=1, category=category)
+        train(args, time_span=args.time_span, version=0, category=category)

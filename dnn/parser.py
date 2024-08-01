@@ -46,6 +46,8 @@ def parameter_parser():
                         default='/home/python_projects/ner_playground/', type=str)
     parser.add_argument('--task_inf', help="Please give task info",
                         default='123123', type=str)
+    parser.add_argument('--time_span', help="Please give a value for time_span",
+                        type=str)
     # gpu
     parser.add_argument('--device', help="Please give a value for device",
                         default='cuda', type=str)
