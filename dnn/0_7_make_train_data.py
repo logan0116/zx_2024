@@ -70,6 +70,38 @@ def get_inputs(time_span):
     np.save(f'data/y_{time_span}', y_list)
 
 
+def get_inputs_combine():
+    # load by json
+    with open(f'data/node2vec_125.json', 'r', encoding='utf-8') as f:
+        node2vec_125 = json.load(f)
+    with open(f'data/node2vec_135.json', 'r', encoding='utf-8') as f:
+        node2vec_135 = json.load(f)
+    with open(f'data/node2vec_145.json', 'r', encoding='utf-8') as f:
+        node2vec_145 = json.load(f)
+    node2vec = {}
+    node2vec.update(node2vec_125)
+    node2vec.update(node2vec_135)
+    node2vec.update(node2vec_145)
+    # load label
+    node2label = load_node_list()
+    x_list = []
+    y_list = []
+
+    for node, vec in node2vec.items():
+        node = node.split('_')[0]
+        if node not in node2label:
+            continue
+        x_list.append(vec)
+        y_list.append(node2label[node])
+
+    # save by numpy
+    x_list = np.array(x_list)
+    y_list = np.array(y_list)
+    np.save(f'data/x_all_time', x_list)
+    np.save(f'data/y_all_time', y_list)
+
+
 if __name__ == '__main__':
-    for time_span in ['125', '135', '145']:
-        get_inputs(time_span)
+    # for time_span in ['125', '135', '145']:
+    #     get_inputs(time_span)
+    get_inputs_combine()

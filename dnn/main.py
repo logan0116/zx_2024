@@ -41,7 +41,11 @@ def train(args, time_span, version, category):
     y_list = torch.LongTensor(y_list)
     y_list = label_deal(y_list, category)
 
-    sm = SMOTE(random_state=int(time_span), sampling_strategy=0.25)
+    sm = SMOTE(random_state=int(time_span),
+               sampling_strategy={
+                   0: int(torch.sum(y_list == 0)),
+                   1: int(torch.sum(y_list == 1)) * 5}
+               )
     x_list, y_list = sm.fit_resample(x_list, y_list)
 
     x_list = torch.Tensor(x_list)
@@ -163,7 +167,7 @@ def train(args, time_span, version, category):
     print('training finished')
     print('best f1: ', best_f1, 'best precision: ', best_precision, 'best recall: ', bast_recall)
     # print 2 train log
-    with open(f'train_log_{time_span}.txt', 'a') as f:
+    with open(f'train_log_{time_span}_0805.txt', 'a') as f:
         f.write('category: {}\n'.format(category))
         f.write('best f1: {}\n'.format(best_f1))
         f.write('best precision: {}\n'.format(best_precision))
