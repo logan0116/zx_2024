@@ -124,14 +124,9 @@ def doc_trans_1(model_path, file_path, output_path):
 
 def doc_trans_2(model_path, output_path, length, batch_size, version=0):
     print('length', length, 'batch_size', batch_size, 'version', version)
-    device = torch.device('cuda:1')
+    device = torch.device('cuda:0')
     # model_load
     tokenizer, bert_model = model_load(model_path)
-    # load checkpoint
-    if version == 1:
-        device = torch.device('cuda:1')
-        model_state_dict = torch.load('pretrain/MLM_v2_20231127-194715_0.pt')
-        bert_model.load_state_dict(model_state_dict, strict=False)
 
     bert_model.to(device)
     bert_model.eval()
@@ -184,10 +179,10 @@ def doc_trans_2(model_path, output_path, length, batch_size, version=0):
 
 
 if __name__ == '__main__':
-    time_span = '145'
+    time_span = '135'
     model_path = 'hfl/chinese-roberta-wwm-ext-large'
     file_path = f'data/text_{time_span}.json'
     output_path = f'data/doc2vec_{time_span}'
-    # doc_trans_1(model_path, file_path, output_path)
-    for length, batch_size in [(512, 12)]:
+    doc_trans_1(model_path, file_path, output_path)
+    for length, batch_size in [(256, 24), (512, 12)]:
         doc_trans_2(model_path, output_path, length, batch_size)

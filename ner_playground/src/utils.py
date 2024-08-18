@@ -62,9 +62,15 @@ class DataProcess:
         """
         text_list = []
         label_list = []
+        # 隔5条抽一条
+        i = 0
         with open(filename, encoding='utf-8') as f:
             for l in f:
                 l = json.loads(l)
+                i += 1
+                if i % 5 != 0:
+                    continue
+
                 label_list_temp = []
                 for k, v in l['label'].items():
                     for spans in v.values():

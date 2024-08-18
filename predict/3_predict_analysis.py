@@ -12,39 +12,51 @@ import pandas as pd
 import json
 
 c2threshold = {
-    0: (0.94, 0.94),
-    1: (0.99, 0.99),
-    2: (0.99, 0.99),
-    3: (0.98, 0.98),
-    4: (0.97, 0.97),
-    5: (0.94, 0.94),
-    6: (0.9, 0.9),
-    7: (0.99, 0.99)
+    0: (0.9, 0.98, 0.98),
+    1: (0.975, 0.95, 0.95),
+    2: (0.975, 0.95, 0.996),
+    3: (0.1, 0.99, 0.5),
+    4: (0.975, 0.999, 0.9925),
+    5: (0.9, 0.98, 0.9),
+    6: (0.5, 0.9, 0.5),
+    7: (0.9, 0.4, 0.6)
 }
+
+category_trans = {0: '高端装备',
+                  1: '节能环保',
+                  2: '生物',
+                  3: '数字创意',
+                  4: '新材料',
+                  5: '新能源',
+                  6: '新能源汽车',
+                  7: '新一代信息技术'}
+
+# c2threshold = {
+#     0: (0.995, 0.998, 0.995),
+#     1: (0.995, 0.985, 0.995),
+#     2: (0.9999, 0.999, 0.9999),
+#     3: (0.999, 0.995, 0.999),
+#     4: (0.99, 0.999, 0.98),
+#     5: (0.95, 0.95, 0.95),
+#     6: (0.95, 0.95, 0.95),
+#     7: (0.98, 0.99, 0.9995)
+# }
+
 print(c2threshold)
 
 
 def node2value_trans(node2value, threshold, year, category):
     node2value_clean = {}
-    t_s, t_e = threshold
-    t = t_s + (year - 2011) * (t_e - t_s) / (2023 - 2011)
+    t_125, t_135, t_145 = threshold
+    if year in [2011, 2012, 2013, 2014, 2015]:
+        t = t_125
+    elif year in [2016, 2017, 2018, 2019, 2020]:
+        t = t_135
+    else:
+        t = t_145
 
-    if 2016 <= year <= 2020:
-        if category == 0:
-            # done
-            t += 0.03
-        elif category == 2:
-            # done
-            t += 0.0095
-        elif category == 4:
-            # done
-            t += 0.02
-        elif category == 5:
-            # done
-            t += 0.059
-        elif category == 7:
-            # done
-            t += 0.005
+    if year == 2011 and category == 3:
+        t = 0.5
 
     for node, value in node2value.items():
         if value > t:
@@ -95,9 +107,6 @@ def output():
     node_easy_name_list = df['证券名称'].to_list()
     node2node_name = {node: node_name for node, node_name in zip(node_list, node_name_list)}
     node2node_easy_name = {node: node_easy_name for node, node_easy_name in zip(node_list, node_easy_name_list)}
-
-    category_trans = {0: '高端装备', 1: '节能环保', 2: '生物', 3: '数字创意',
-                      4: '新材料', 5: '新能源', 6: '新能源汽车', 7: '新一代信息技术'}
 
     for year in range(2011, 2024):
         result_list = []

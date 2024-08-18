@@ -141,25 +141,24 @@ def labeled(time_span, i):
         prompt = make_prompt(category)
         for word in tqdm(word2freq, desc=category, total=len(word2freq)):
             if category + " | " + word + " | " + str(word2freq[word]) in already_get_set:
+                continue
+            try:
                 if len(word) > 10:
                     already_get_set[category + " | " + word + " | " + str(word2freq[word])] = '否'
-                continue
-            # try:
-            if len(word) > 10:
-                already_get_set[category + " | " + word + " | " + str(word2freq[word])] = '否'
-            else:
-                each_prompt = prompt.copy()
-                each_prompt.append({"role": "user", "content": "术语：{}".format(word)})
-                each_prompt.append({"role": "assistant", "content": ''})
+                else:
+                    each_prompt = prompt.copy()
+                    each_prompt.append({"role": "user", "content": "术语：{}".format(word)})
+                    each_prompt.append({"role": "assistant", "content": ''})
 
-                message = chat(each_prompt)
-                already_get_set[category + " | " + word + " | " + str(word2freq[word])] = message
-            # except:
-            #     print('error', category, word)
-            #     # save already get
-            #     with open('data/label_already_get.json', 'w', encoding='utf-8') as f:
-            #         json.dump(already_get_set, f)
-            #     continue
+                    message = chat(each_prompt)
+                    already_get_set[category + " | " + word + " | " + str(word2freq[word])] = message
+                    print(category, word, message)
+            except:
+                print('error', category, word)
+                # save already get
+                with open(f'../data/label_already_get_{time_span}_{i}.json', 'w', encoding='utf-8') as f:
+                    json.dump(already_get_set, f)
+                break
 
     with open(f'../data/label_already_get_{time_span}_{i}.json', 'w', encoding='utf-8') as f:
         json.dump(already_get_set, f)
@@ -172,5 +171,5 @@ def labeled(time_span, i):
 
 
 if __name__ == '__main__':
-    for time_span in ['125', '135', '145']:
+    for time_span in ['145']:
         labeled(time_span, 0)

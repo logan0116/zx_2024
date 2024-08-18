@@ -102,6 +102,6 @@ def get_inputs_combine():
 
 
 if __name__ == '__main__':
-    # for time_span in ['125', '135', '145']:
-    #     get_inputs(time_span)
-    get_inputs_combine()
+    for time_span in ['125', '135', '145']:
+        get_inputs(time_span)
+    # get_inputs_combine()

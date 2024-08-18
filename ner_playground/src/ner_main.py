@@ -20,6 +20,7 @@ import time
 
 def train(args):
     time_span = '145'
+    print('train time span:', time_span)
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     base_model = 'hfl/chinese-roberta-wwm-ext-large'
     print(device)

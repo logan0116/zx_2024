@@ -230,7 +230,6 @@ def deal_3():
         for year in year_list:
             year2time_span[year] = time_span
 
-
     for input_file in input_file_list:
         time_span = year2time_span[input_file]
         with open(f'title_screen_{time_span}.txt', 'r', encoding='utf-8') as f:
@@ -352,6 +351,9 @@ def deal_5(time_span):
     input_file_list = os.listdir(input_file_path)
     input_file_list = sorted(input_file_list, key=lambda x: int(x[:4]))
 
+    # load node_id_list_chosen
+    node_id_list_chosen = load_node_list(time_span)
+
     if time_span == '125':
         input_file_range = ['2011', '2012', '2013', '2014', '2015']
     elif time_span == '135':
@@ -368,6 +370,8 @@ def deal_5(time_span):
 
         load_file_path = os.path.join(input_file_path, input_file)
         load_file_list = os.listdir(load_file_path)
+        load_file_list = [file for file in load_file_list if file.split('_')[0] in node_id_list_chosen]
+
         for file in tqdm(load_file_list):
             txt_path = os.path.join(load_file_path, file)
             with open(txt_path, 'r', encoding='utf-8') as f:
@@ -407,10 +411,10 @@ def deal_5(time_span):
 
 if __name__ == "__main__":
     # deal_1()
-    deal_2('125')
-    deal_2('135')
-    deal_2('145')
-    deal_3()
+    # deal_2('125')
+    # deal_2('135')
+    # deal_2('145')
+    # deal_3()
     deal_5(time_span='125')
     deal_5(time_span='135')
     deal_5(time_span='145')

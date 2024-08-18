@@ -79,21 +79,18 @@ def text_cut_single(txt_file_path, save_path, file):
 
 
 def load_node_list():
-    with open('data/node_id_list.json', 'r', encoding='utf-8') as f:
-        c2node_id_list = json.load(f)
-    node_id_list = []
-    for c, node_id_list_ in c2node_id_list.items():
-        node_id_list += node_id_list_
-    return node_id_list
+    with open('data/year2category2node_list.json', 'r', encoding='utf-8') as f:
+        year2category2node_list = json.load(f)
+    return year2category2node_list
 
 
 def deal_2():
     print('---------------------deal_2---------------------')
-    input_file_path = '../topmine/data/output/'
+    input_file_path = '../topmine-0811/data/output/'
     output_file_path = 'data/clean_1/'
 
     # load node_id_list_chosen
-    node_id_list_chosen = load_node_list()
+    year2category2node_list = load_node_list()
 
     input_file_list = os.listdir(input_file_path)
     input_file_list = sorted(input_file_list, key=lambda x: int(x[:4]))
@@ -104,7 +101,12 @@ def deal_2():
         load_file_path = os.path.join(input_file_path, input_file)
         load_file_list = os.listdir(load_file_path)
         # clean
-        load_file_list = [file for file in load_file_list if file.split('_')[0] in node_id_list_chosen]
+        category2node_list = year2category2node_list[input_file]
+        node_id_list_chosen = []
+        for category, node_list in category2node_list.items():
+            node_id_list_chosen.extend(node_list)
+
+        load_file_list = [file for file in load_file_list if file[:6] in node_id_list_chosen]
         # save path
         save_file_path = os.path.join(output_file_path, input_file)
         if not os.path.exists(save_file_path):
@@ -123,6 +125,34 @@ def deal_2():
     # save title
     with open('title.txt', 'w', encoding='utf-8') as f:
         f.write('\n'.join(title_list))
+
+
+def load_title():
+    """
+    加载title
+    :return:
+    """
+    title_path = f'title.txt'
+    with open(title_path, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    title_list = [l.strip() for l in lines]
+    print('title num: {}'.format(len(title_list)))
+    title_list = list(set(title_list))
+    print('title num(combine): {}'.format(len(title_list)))
+    # remove context
+    title_list = [l for l in title_list if '………' not in l]
+    print('title num(remove context): {}'.format(len(title_list)))
+    key_words_p = ['经营', '产品', '创新', '策略', '业务', '研发', '核心竞争力', '决策', '风险']
+    title_list = [l for l in title_list if any([kw in l for kw in key_words_p])]
+    key_words_n = ['现金', '金额', '表', '财务', '资产', '负债', '利润', '收入', '成本', '费用', '现金流', '利润表',
+                   '资产负债表', '现金流量表']
+    title_list = [l for l in title_list if not any([kw in l for kw in key_words_n])]
+    print('title num(clean): {}'.format(len(title_list)))
+    # save
+    title_path = f'title_screen.txt'
+    with open(title_path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(title_list))
+    print('save title_screen.txt')
 
 
 def text_extract_single(title_screen_list, txt_file_path, save_file_path, file):
@@ -356,6 +386,7 @@ def deal_5(time_span):
 
 if __name__ == "__main__":
     # deal_2()
+    # load_title()
     # deal_3()
     for time_span in ['125', '135', '145']:
         deal_5(time_span)

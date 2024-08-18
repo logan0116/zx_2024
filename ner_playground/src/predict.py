@@ -81,9 +81,9 @@ def predict(time_span):
                   )
 
     time_span2model_path = {
-        '125': '../model/GP_20240730-154649_4.pt',
-        '135': '../model/GP_20240730-182752_4.pt',
-        '145': '../model/GP_20240730-203711_4.pt'
+        '125': '../model/GP_20240814-104700_8.pt',
+        '135': '../model/GP_20240814-142104_12.pt',
+        '145': '../model/GP_20240814-161525_8.pt'
     }
     model_state_dict = torch.load(time_span2model_path[time_span])
     model.load_state_dict(model_state_dict, strict=False)
@@ -119,9 +119,9 @@ def predict(time_span):
 
 
 if __name__ == '__main__':
-    # data_process('125')
-    # data_process('135')
-    # data_process('145')
+    data_process('125')
+    data_process('135')
+    data_process('145')
     predict('125')
     predict('135')
     predict('145')
